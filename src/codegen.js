@@ -7,7 +7,7 @@ const stripMustache = value => {
 };
 const stripThisContext = value => ( value.replace(/this\./g, '') );
 const onEventReg = /^on-/;
-const normalDirectiveReg = /^r-[model|html]/;
+const normalDirectiveReg = /^r-[model|html|show]/;
 const uncloseTags = ['input', 'img']
 const OPEN = /\{/;
 const CLOSE = /\}/;
@@ -32,6 +32,8 @@ class VueGenerator {
       return this.genIf(el)
     } else if(el.type === 'list') {
       return this.genList(el)
+    } else if(el.type === 'template') {
+      return this.genTemplate(el)
     }
     return this.genTag(el);
   }
@@ -58,8 +60,6 @@ class VueGenerator {
       const { name, value } = attr
       if (onEventReg.test(name)) {
         return this.genEvent(attr);
-      } else if(normalDirectiveReg.test(name)) {
-        return this.genNormalDirective(attr);
       } else if (name === 'r-class') {
         return this.genRClass(attr)
       } else if (name === 'class') {
@@ -68,6 +68,12 @@ class VueGenerator {
         return this.genStyle(attr)
       } else if (name === 'r-style') {
         return this.genRStyle(attr)
+      // r-hide -> v-show
+      } else if (name === 'r-hide') {
+        return this.genRHide(attr)
+      // r-show, r-model, r-html
+      } else if(normalDirectiveReg.test(name)) {
+        return this.genNormalDirective(attr);
       } else {
         if (mustacheReg.test(value)) {
           return `:${name}="${stripMustache(value)}"`
@@ -231,6 +237,21 @@ class VueGenerator {
       }
     })
     return `:style="[${vueStyleList.join(',')}]"`
+  }
+
+  genRHide(attr = {}) {
+    const { value = '' } = attr;
+    const vueValue = stripThisContext(stripMustache(value)) 
+    return `v-show="!(${vueValue})"`
+  }
+
+  genTemplate(el = {}) {
+    const { content } = el;
+    if (/this.\$body/.test(content.body)) {
+      return `<slot></slot>`
+    }
+
+    return `<p>无法转换 {#inc ${content.body}}, 请手动转换</p>`
   }
 }
 

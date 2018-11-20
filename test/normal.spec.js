@@ -1,20 +1,6 @@
 const { assert } = require('./helper');
 
 describe('normal', function() {
-  it('r-model', () => {
-    assert(
-      `<input r-model="{ title }"/>`,
-      `<input v-model="title">`
-    )
-  })
-
-  it('r-html', () => {
-    assert(
-      `<input r-html="{ title }"/>`,
-      `<input v-html="title">`
-    )
-  })
-
   it('binding', () => {
     assert(
       `<input value="{ title }"/>`,
@@ -40,6 +26,17 @@ describe('normal', function() {
     assert(
       `<div>{title} body {footer}</div>`,
       `<div>{{title}} body {{footer}}</div>`
+    )
+  })
+
+  it('unclose tag', () => {
+    assert(
+      `<input>`,
+      `<input>`
+    )
+    assert(
+      `<img src="{url}">`,
+      `<img :src="url">`
     )
   })
 })

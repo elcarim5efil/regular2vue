@@ -364,49 +364,26 @@ op.expr = function(){
 op.filter = function(){
   var left = this.assign();
   var ll = this.eat('|');
-  var buffer = [], filters,setBuffer, prefix,
+  var buffer = [], filters,
     attr = "t", 
-    set = left.set, get, 
     tmp = "";
 
   if(ll){
-    if(set) {
-      setBuffer = [];
-      filters = [];
-    }
-
-    prefix = "(function(" + attr + "){";
-
     do{
       var filterName = this.match('IDENT').value;
-      tmp = attr + " = " + ctxName + "._f_('" + filterName + "' ).get.call( "+_.ctxName +"," + attr ;
+      tmp = `|${filterName}`
       if(this.eat(':')){
-        tmp +=", "+ this.arguments("|").join(",") + ");"
+        var args = this.arguments("|").join(",")
+        tmp += `(${args})`
       }else{
-        tmp += ');'
+        tmp += ''
       }
       buffer.push(tmp);
-      
-      if(set){
-        // only in runtime ,we can detect  whether  the filter has a set function. 
-        filters.push(filterName);
-        setBuffer.unshift( tmp.replace(" ).get.call", " ).set.call") );
-      }
+    } while (ll = this.eat('|'));
 
-    }while(ll = this.eat('|'));
-    buffer.push("return " + attr );
-    setBuffer && setBuffer.push("return " + attr);
-
-    get =  prefix + buffer.join("") + "})("+left.get+")";
-    // we call back to value.
-    if(setBuffer){
-      // change _ss__(name, _p_) to _s__(name, filterFn(_p_));
-      set = set.replace(_.setName, 
-        prefix + setBuffer.join("") + "})("+　_.setName　+")" );
-
+    var ret = {
+      get: left.get + buffer.join("")
     }
-    // the set function is depend on the filter definition. if it have set method, the set will work
-    var ret = getset(get, set);
     ret.filters = filters;
     return ret;
   }
