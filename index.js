@@ -2,10 +2,12 @@
 const prettier = require("prettier");
 const genVue = require('./src/codegen');
 
-module.exports = function gen(source, { pretty = true }) {
-  const raw = genVue(template)
+function gen(source, { pretty = true } = {}) {
+  const raw = genVue(source)
   if (pretty) {
-    return prettier.format(`<div>${raw}</div>`);
+    return prettier.format(`<div>${raw}</div>`, { parser: 'vue' });
   }
   return raw;
 }
+
+module.exports = gen;
