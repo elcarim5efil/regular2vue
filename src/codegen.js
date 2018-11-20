@@ -8,7 +8,7 @@ const stripMustache = value => {
 const stripThisContext = value => ( value.replace(/this\./g, '') );
 const onEventReg = /^on-/;
 const normalDirectiveReg = /^r-[model|html]/;
-const uncloseTags = ['input']
+const uncloseTags = ['input', 'img']
 const OPEN = /\{/;
 const CLOSE = /\}/;
 
