@@ -1,0 +1,19 @@
+{
+  "name": "regular2vue",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "brk": "node --inspect-brk ./index.js",
+    "test:dev": "jest --watchAll"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "^7.0.1",
+    "prettier": "^1.15.2"
+  },
+  "devDependencies": {
+    "jest": "^23.6.0"
+  }
+}

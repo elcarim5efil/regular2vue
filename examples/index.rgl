@@ -1,0 +1,3 @@
+<div on-click="{this.onClick($event)}">
+
+</div>
