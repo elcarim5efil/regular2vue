@@ -1,4 +1,4 @@
-const genVue = require('../src/genVue');
+const genVue = require('../src/codegen');
 
 module.exports = {
   assert(source, expected) {
