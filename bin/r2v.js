@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const program = require('commander');
-const compileFile = require('../src/compile-file')
+const transformFiles = require('../src/transform-files')
 const pkg = require('../package.json')
 
 program
@@ -10,4 +10,4 @@ program
 
 const [ source, output ] = program.args
 
-compileFile(source, output)
+transformFiles(source, output)
