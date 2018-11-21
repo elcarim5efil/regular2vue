@@ -42,6 +42,8 @@ class VueGenerator {
       return this.genList(el)
     } else if(el.type === 'template') {
       return this.genTemplate(el)
+    } else if(el.type === 'comment') {
+      return this.genComment(el)
     }
     return this.genTag(el);
   }
@@ -248,6 +250,11 @@ class VueGenerator {
     }
 
     return `<p>无法转换 {#inc ${content.body}}, 请手动转换</p>`
+  }
+
+  genComment(el = {}) {
+    const { value = '' } = el;
+    return `<!-- ${value.trim()} -->`
   }
 }
 

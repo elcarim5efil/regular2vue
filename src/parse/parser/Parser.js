@@ -127,6 +127,8 @@ op.statement = function(){
       return this.directive();
     case 'EXPR_OPEN':
       return this.interplation();
+    case 'COMMENT':
+      return this.comment();
     default:
       this.error('Unexpected token: '+ this.la())
   }
@@ -702,6 +704,15 @@ op.paren = function(){
   res.set = res.set;
   this.match(')');
   return res;
+}
+
+op.comment = function() {
+  var ll = this.ll();
+  this.next();
+  return {
+    type: 'comment',
+    value: ll.value
+  };
 }
 
 function getset(get, set){

@@ -284,9 +284,11 @@ var rules = {
   }, 'TAG'],
 
   TAG_SPACE: [/{SPACE}+/, null, 'TAG'],
-  TAG_COMMENT: [/<\!--([^\x00]*?)--\>/, function(all){
-    this.syntaxSets.leave()
+  TAG_COMMENT: [/<\!--([^\x00]*?)--\>/, function(all, one, two){
+    // this.syntaxSets.leave()
     // this.leave('TAG')
+    var value = one || two || "";
+    return {type: 'COMMENT', value: value}
   } ,'TAG'],
 
   // 3. JST
