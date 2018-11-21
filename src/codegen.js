@@ -3,7 +3,7 @@ const { parse, parseExpression, lex } = require('./parse');
 const mustacheReg = /^{(.*)}$/;
 const stripMustache = value => {
   const str = (mustacheReg.exec(value) || [])[1] || ''
-  return str.trim();
+  return str ? str.trim() : value;
 };
 const stripThisContext = value => ( value.replace(/this\./g, '') );
 const onEventReg = /^on-/;
@@ -11,6 +11,14 @@ const normalDirectiveReg = /^r-[model|html|show]/;
 const uncloseTags = ['input', 'img']
 const OPEN = /\{/;
 const CLOSE = /\}/;
+
+function resolveValue(value) {
+  if (typeof value === 'object') {
+    return value.body;
+  } else {
+    return value;
+  }
+}
 
 class VueGenerator {
   constructor(source) {
@@ -57,7 +65,9 @@ class VueGenerator {
   genAttrs(el = {}) {
     const { attrs = [] } = el;
     const attrsStr =  attrs.map(attr => {
-      const { name, value } = attr
+      const { name, value } = attr;
+      const realValue = resolveValue(value);
+
       if (onEventReg.test(name)) {
         return this.genEvent(attr);
       } else if (name === 'r-class') {
@@ -75,10 +85,10 @@ class VueGenerator {
       } else if(normalDirectiveReg.test(name)) {
         return this.genNormalDirective(attr);
       } else {
-        if (mustacheReg.test(value)) {
-          return `:${name}="${stripMustache(value)}"`
+        if (typeof value === 'object' || mustacheReg.test(realValue)) {
+          return `:${name}="${stripMustache(realValue)}"`
         }
-        return `${name}="${value}"`;
+        return `${name}="${realValue}"`;
       }
     }).join(' ');
 
@@ -87,26 +97,10 @@ class VueGenerator {
 
   genEvent(attr = {}) {
     const { name, value = '' } = attr;
-    const expr = stripMustache(value)
+    const realValue = resolveValue(value).replace(/\(\)/g, '');
     const vueName = name.replace(onEventReg, '')
-    const tokens = lex(expr);
-    let vueExpr = '';
-    let i = 0;
-    let cursor = tokens[i];
 
-    while(cursor.type !== 'EOF' && i < tokens.length) {
-      if (cursor.type === 'IDENT' && cursor.value === 'this' && tokens[i + 1].value === '.') {
-        i += 2;
-      } else if (cursor.type === '(' && tokens[i + 1].type === ')') {
-        i += 2;
-      } else {
-        vueExpr += cursor.value
-        i++;
-      }
-      cursor = tokens[i]
-    }
-
-    return `@${vueName}="${vueExpr}"`;
+    return `@${vueName}="${stripMustache(stripThisContext(realValue))}"`;
   }
 
   genNormalDirective(attr = {}) {
@@ -211,13 +205,15 @@ class VueGenerator {
 
   genRClass(attr = {}) {
     const { value = '' } = attr;
-    const vueValue = stripMustache(stripThisContext(value));
+    const realValue = resolveValue(value);
+    const vueValue = /^{{/.test(realValue) ? stripMustache(stripThisContext(realValue)) : realValue;
     return `:class="${vueValue}"`
   }
 
   genRStyle(attr = {}) {
     const { value = '' } = attr;
-    const vueValue = stripMustache(stripThisContext(value));
+    const realValue = resolveValue(value);
+    const vueValue = /^{{/.test(realValue) ? stripMustache(stripThisContext(realValue)) : realValue;
     return `:style="${stripThisContext(vueValue)}"`
   }
 
