@@ -8,6 +8,14 @@ describe('normal', function() {
     )
   })
 
+
+  it('binding should work without quotes', () => {
+    assert(
+      `<input value={title}/>`,
+      `<input :value="title">`
+    )
+  })
+
   it('static', () => {
     assert(
       `<input placeholder="hello"/>`,

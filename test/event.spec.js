@@ -13,7 +13,7 @@ describe('event', function() {
     )
 
     assert(
-      `<div on-click="{this.onClick(1, 2)}"></div>`,
+      `<div on-click="{this.onClick(1,2)}"></div>`,
       `<div @click="onClick(1,2)"></div>`
     )
   })
@@ -25,8 +25,15 @@ describe('event', function() {
     )
 
     assert(
-      `<div on-click="{ this.a = this.b + this.c }"></div>`,
+      `<div on-click="{this.a=this.b+this.c}"></div>`,
       `<div @click="a=b+c"></div>`
+    )
+  })
+
+  it('should work without quotes', () => {
+    assert(
+      `<div on-click={ this.onClick() }></div>`,
+      `<div @click="onClick"></div>`
     )
   })
 })

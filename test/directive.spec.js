@@ -37,4 +37,11 @@ describe('directive', function() {
       `<input v-html="title">`
     )
   })
+
+  it('should work without quotes', () => {
+    assert(
+      `<div r-style={{'background':test}}></div>`,
+      `<div :style="{'background':test}"></div>`
+    )
+  })
 })

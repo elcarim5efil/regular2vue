@@ -37,4 +37,11 @@ describe('style & r-style', function() {
       `<div :style="{ width: getWidth() }"></div>`
     )
   })
+
+  it('should work without quotes', () => {
+    assert(
+      `<div r-style={{'background':test}}></div>`,
+      `<div :style="{'background':test}"></div>`
+    )
+  })
 })

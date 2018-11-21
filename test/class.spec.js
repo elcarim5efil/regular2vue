@@ -41,4 +41,11 @@ describe('class & r-class', function() {
       `<div :class="{'test-class':test}"></div>`
     )
   })
+
+  it('should work without quotes', () => {
+    assert(
+      `<div r-class={{'test-class':test}}></div>`,
+      `<div :class="{'test-class':test}"></div>`
+    )
+  })
 })
