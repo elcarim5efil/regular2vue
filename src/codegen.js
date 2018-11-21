@@ -24,10 +24,20 @@ class VueGenerator {
   constructor(source) {
     this.source = source;
     this.ast = parse(source);
+    this.shouldWrapRootDiv = this.checkIfShouldWrapRootDiv();
+  }
+
+  checkIfShouldWrapRootDiv() {
+    const notCommentRootElements = this.ast.filter(e => e.type !== 'comment');
+    return notCommentRootElements.length > 1 || this.ast[0].type === 'list';
   }
 
   genVue() {
-    return this.ast.map(this.genElement.bind(this)).join('')
+    const compiledContent = this.ast.map(this.genElement.bind(this)).join('');
+    if (this.shouldWrapRootDiv) {
+      return `<div>${compiledContent}</div>`;
+    }
+    return compiledContent;
   }
 
   genElement(el = {}) {
