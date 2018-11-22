@@ -33,7 +33,7 @@
               <div slot="left" class="code-container">
                   <h3>Input</h3>
                   <codemirror 
-                    :code="input"
+                    v-model="input"
                     :options="codeEditorOptions"
                     @input="onInputChange"
                   />
@@ -51,8 +51,8 @@
   </div>
 </div>
 <script>
-  console.log(window.CodeMirror.mimeModes)
   Vue.use(window.VueCodemirror)
+
   new Vue({
     el: '#app',
     data: {
