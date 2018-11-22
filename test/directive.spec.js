@@ -8,7 +8,17 @@ describe('directive', function() {
     )
 
     assert(
+      `<input r-hide={ !show }/>`,
+      `<input v-show="!((!show))">`
+    )
+
+    assert(
       `<input r-hide="{ this.shouldHide() }"/>`,
+      `<input v-show="!(shouldHide())">`
+    )
+
+    assert(
+      `<input r-hide={ this.shouldHide() }/>`,
       `<input v-show="!(shouldHide())">`
     )
   })
@@ -22,6 +32,14 @@ describe('directive', function() {
       `<input r-show="{ shouldShow() }"/>`,
       `<input v-show="shouldShow()">`
     )
+    assert(
+      `<input r-show={ show }/>`,
+      `<input v-show="show">`
+    )
+    assert(
+      `<input r-show={ shouldShow() }/>`,
+      `<input v-show="shouldShow()">`
+    )
   })
 
   it('r-model', () => {
@@ -29,11 +47,19 @@ describe('directive', function() {
       `<input r-model="{ title }"/>`,
       `<input v-model="title">`
     )
+    assert(
+      `<input r-model={ title }/>`,
+      `<input v-model="title">`
+    )
   })
 
   it('r-html', () => {
     assert(
       `<input r-html="{ title }"/>`,
+      `<input v-html="title">`
+    )
+    assert(
+      `<input r-html={ title }/>`,
       `<input v-html="title">`
     )
   })

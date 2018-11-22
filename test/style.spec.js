@@ -11,19 +11,19 @@ describe('style & r-style', function() {
   it('binding style', () => {
     assert(
       `<div style="width:{width}px"></div>`,
-      `<div :style="[\`width:\${width}px\`]"></div>`
+      `<div :style="[{'width':\`\${width}px\`}]"></div>`
     )
     assert(
       `<div style="width:{this.getWidth()}px"></div>`,
-      `<div :style="[\`width:\${getWidth()}px\`]"></div>`
+      `<div :style="[{'width':\`\${getWidth()}px\`}]"></div>`
     )
     assert(
       `<div style="width:{width}px;height:10px"></div>`,
-      `<div :style="[\`width:\${width}px\`,'height:10px']"></div>`
+      `<div :style="[{'width':\`\${width}px\`,'height':'10px'}]"></div>`
     )
     assert(
       `<div style="width:{width}px;height:{height}px"></div>`,
-      `<div :style="[\`width:\${width}px\`,\`height:\${height}px\`]"></div>`
+      `<div :style="[{'width':\`\${width}px\`,'height':\`\${height}px\`}]"></div>`
     )
   })
 
