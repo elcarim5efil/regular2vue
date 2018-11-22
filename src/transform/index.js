@@ -2,6 +2,7 @@ const {
   transformTemplate,
   resolveOutputPath,
   readFile,
+  copyFile,
   outputFile
 } = require('./helper');
 
@@ -35,7 +36,15 @@ function transformHtml(input, output, options = {}) {
   }
 }
 
+function transformOther(input, output, options = {}) {
+  const outputPath = resolveOutputPath(input, output);
+  copyFile(input, outputPath);
+
+  console.log(`copying "${input}" to "${outputPath}"`);
+}
+
 module.exports = {
   transformHtml,
-  transformRgl
+  transformRgl,
+  transformOther
 }

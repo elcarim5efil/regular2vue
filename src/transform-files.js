@@ -3,7 +3,8 @@ const glob = require('glob')
 
 const {
   transformRgl,
-  transformHtml
+  transformHtml,
+  transformOther
 } = require('./transform');
 
 function readFiles(input, options = {}) {
@@ -18,20 +19,23 @@ function readFiles(input, options = {}) {
   })
 }
 
-function transformFile(input, output, options = {}) {
-  if(path.extname(input) === '.rgl') {
+function transformFileSync(input, output, options = {}) {
+  const ext = path.extname(input)
+  if(ext === '.rgl') {
     transformRgl(input, output, options);
-  } else {
+  } else if(ext === '.html') {
     transformHtml(input, output, options);
+  } else {
+    transformOther(input, output, options)
   }
 }
 
 function transformFiles(input, output, options = {}) {
-  readFiles(input)
+  return readFiles(input)
     .then(files => {
       files.forEach(filePath => {
         console.log(`transforming "${filePath}"...`)
-        transformFile(filePath, output);
+        transformFileSync(filePath, output);
       });
     })
     .catch(err => {

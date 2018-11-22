@@ -32,6 +32,10 @@ function outputFile(filePath, content) {
   fs.outputFileSync(filePath, content);
 }
 
+function copyFile(from, to) {
+  fs.copyFileSync(from, to);
+}
+
 function transformTemplate(source, options = {}) {
   const { pretty = true } = options;
   let error = null;
@@ -61,6 +65,7 @@ module.exports = {
   resolvePath,
   resolveOutputPath,
   readFile,
+  copyFile,
   outputFile,
   transformTemplate,
 };
