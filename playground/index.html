@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Regular to Vue</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://unpkg.com/iview/dist/styles/iview.css">
+  <link href="https://unpkg.com/codemirror@5.42.0/lib/codemirror.css" rel="stylesheet">
+  <link href="https://unpkg.com/codemirror@5.42.0/theme/monokai.css" rel="stylesheet">
+
+  <script src="https://unpkg.com/codemirror@5.42.0/lib/codemirror.js"></script>
+  <script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
+
+  <script src="https://unpkg.com/vue-codemirror@4.0.6/dist/vue-codemirror.js"></script>
+  <script src="https://unpkg.com/codemirror@5.42.0/mode/vue/vue.js"></script>
+
+  <script src="https://unpkg.com/iview/dist/iview.min.js"></script>
+
+  <script src="../dist/r2v.js"></script>
+</head>
+<body>
+<div id="app">
+  <div class="layout">
+    <Layout>
+      <Header>
+        <h2>Regular to Vue</h2>
+      </Header>
+      <Layout>
+          <Split hide-trigger>
+              <div slot="trigger"></div>
+              <div slot="left" class="code-container">
+                  <h3>Input</h3>
+                  <codemirror 
+                    :code="input"
+                    :options="codeEditorOptions"
+                    @input="onInputChange"
+                  />
+              </div>
+              <div slot="right" class="code-container">
+                  <h3>Output</h3>
+                  <codemirror
+                    :options="codeEditorOptions"
+                    :value="output"
+                  />
+              </div>
+          </Split>
+      </Layout>
+    </Layout>
+  </div>
+</div>
+<script>
+  console.log(window.CodeMirror.mimeModes)
+  Vue.use(window.VueCodemirror)
+  new Vue({
+    el: '#app',
+    data: {
+      input: '',
+      output: '',
+      codeEditorOptions: {
+        foldGutter: true,
+        lineNumbers: true,
+        mode: 'text/x-vue',
+        theme: 'monokai'
+      }
+    },
+    created() {
+      this.input = `<div>input</div>`;
+      this.transform()
+    },
+    methods: {
+      onInputChange() {
+        this.transform()
+      },
+      transform() {
+        this.output = r2v(this.input);
+      }
+    }
+  })
+</script>
+<style>
+.layout{
+  border: 1px solid #d7dde4;
+  background: #f5f7f9;
+  position: relative;
+  border-radius: 4px;
+  /* overflow: hidden; */
+  /* height: 100vh; */
+}
+.code-container {
+  padding: 8px;
+}
+.CodeMirror {
+  height: 90vh;
+}
+</style>
+</body>
+</html>
