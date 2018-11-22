@@ -37,7 +37,13 @@ function copyFile(from, to) {
 }
 
 function transformTemplate(source, options = {}) {
-  const { pretty = true } = options;
+  const {
+    pretty = true,
+    tabWidth = 4,
+    singleQuote = true,
+    trailingComma = 'none',
+    jsxBracketSameLine = true
+  } = options;
   let error = null;
   let raw = '';
   let prettified = '';
@@ -51,7 +57,13 @@ function transformTemplate(source, options = {}) {
 
   try {
     if (pretty) {
-      prettified = prettier.format(`${raw}`, { parser: 'vue' });
+      prettified = prettier.format(`${raw}`, {
+        parser: 'vue',
+        tabWidth,
+        singleQuote,
+        trailingComma,
+        jsxBracketSameLine
+      });
     }
   } catch(err) {
     error = err
