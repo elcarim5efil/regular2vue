@@ -9,7 +9,7 @@
   "main": "./dist/r2v.js",
   "scripts": {
     "build": "webpack --config build/webpack.config.js",
-    "brk": "node --inspect-brk ./index.js",
+    "brk": "node --inspect-brk ./src/index.js",
     "test:dev": "jest --watchAll"
   },
   "author": "",

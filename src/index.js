@@ -2,6 +2,9 @@ const prettier = require("prettier/standalone");
 const plugins = [require("prettier/parser-html")];
 const codegen = require('./codegen');
 
+codegen(`<input class="r-{type}">`)
+      
+
 function prettify(content, options = {}) {
   const {
     pretty = true,

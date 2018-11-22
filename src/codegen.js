@@ -1,24 +1,19 @@
-const { parse, parseExpression, lex } = require('./parse');
+const { parse } = require('./parse');
+const {
+  OPEN,
+  CLOSE,
+  stripMustache,
+  stripThisContext,
+  strip,
+  isBindingValue,
+  resolveValue,
+  extractExpressionInString,
+  seperateStyleNameEndValue,
+} = require('./helper');
 
-const mustacheReg = /^{(.*)}$/;
-const stripMustache = value => {
-  const str = (mustacheReg.exec(value) || [])[1] || ''
-  return str ? str.trim() : value;
-};
-const stripThisContext = value => ( value.replace(/this\./g, '') );
 const onEventReg = /^on-/;
 const normalDirectiveReg = /^r-[model|html|show]/;
 const uncloseTags = ['input', 'img']
-const OPEN = /\{/;
-const CLOSE = /\}/;
-
-function resolveValue(value) {
-  if (typeof value === 'object') {
-    return value.body;
-  } else {
-    return value;
-  }
-}
 
 class VueGenerator {
   constructor(source) {
@@ -78,7 +73,6 @@ class VueGenerator {
     const { attrs = [] } = el;
     const attrsStr =  attrs.map(attr => {
       const { name, value } = attr;
-      const realValue = resolveValue(value);
 
       if (onEventReg.test(name)) {
         return this.genEvent(attr);
@@ -97,10 +91,10 @@ class VueGenerator {
       } else if(normalDirectiveReg.test(name)) {
         return this.genNormalDirective(attr);
       } else {
-        if (typeof value === 'object' || mustacheReg.test(realValue)) {
-          return `:${name}="${stripMustache(realValue)}"`
+        if (isBindingValue(value)) {
+          return `:${name}="${resolveValue(value)}"`
         }
-        return `${name}="${realValue}"`;
+        return `${name}="${value}"`;
       }
     }).join(' ');
 
@@ -112,12 +106,12 @@ class VueGenerator {
     const realValue = resolveValue(value).replace(/\(\)/g, '');
     const vueName = name.replace(onEventReg, '')
 
-    return `@${vueName}="${stripMustache(stripThisContext(realValue))}"`;
+    return `@${vueName}="${realValue}"`;
   }
 
   genNormalDirective(attr = {}) {
     const { name, value = '' } = attr;
-    const expr = stripMustache(value);
+    const expr = resolveValue(value);
     const vueName = name.replace(/^r/, 'v')
     return `${vueName}="${expr}"`;
   }
@@ -218,15 +212,15 @@ class VueGenerator {
   genRClass(attr = {}) {
     const { value = '' } = attr;
     const realValue = resolveValue(value);
-    const vueValue = /^{{/.test(realValue) ? stripMustache(stripThisContext(realValue)) : realValue;
-    return `:class="${vueValue}"`
+    const vueValue = realValue;
+    return `:class="${vueValue}"`;
   }
 
   genRStyle(attr = {}) {
     const { value = '' } = attr;
     const realValue = resolveValue(value);
-    const vueValue = /^{{/.test(realValue) ? stripMustache(stripThisContext(realValue)) : realValue;
-    return `:style="${stripThisContext(vueValue)}"`
+    const vueValue = realValue;
+    return `:style="${vueValue}"`;
   }
 
   genStyle(attr = {}) {
@@ -236,20 +230,27 @@ class VueGenerator {
       return `style="${value}"`
     }
 
-    const styleList = extractExpressionInString(value, /;/);
-    const vueStyleList = styleList.map(c => {
-      if (OPEN.test(c)) {
-        return `\`${stripThisContext(c).replace(/{/g, '${')}\``
-      } else {
-        return `'${c}'`
-      }
-    })
-    return `:style="[${vueStyleList.join(',')}]"`
+    const styleList
+      = extractExpressionInString(value, /;/)
+        .map(seperateStyleNameEndValue);
+
+    const vueStyleList
+      = styleList
+        .map(style => {
+          const { name, value } = style;
+          if (OPEN.test(style.value)) {
+            return `'${name}':\`${stripThisContext(value).replace(/{/g, '${')}\``;
+          } else {
+            return `'${name}':'${value}'`
+          }
+        })
+
+    return `:style="[{${vueStyleList.join(',')}}]"`
   }
 
   genRHide(attr = {}) {
     const { value = '' } = attr;
-    const vueValue = stripThisContext(stripMustache(value)) 
+    const vueValue = resolveValue(value)
     return `v-show="!(${vueValue})"`
   }
 
@@ -266,37 +267,6 @@ class VueGenerator {
     const { value = '' } = el;
     return `<!-- ${value.trim()} -->`
   }
-}
-
-function extractExpressionInString(str, splitReg = /\s+/) {
-  const parts = str.split(splitReg);
-  let i = 0;
-  let cursor = parts[i];
-  let res = []
-
-  while(cursor) {
-    if (OPEN.test(cursor)) {
-      const mustache = [];
-      while(i < parts.length) {
-        mustache.push(cursor);
-
-        if (CLOSE.test(cursor)) {
-          res.push(mustache.join(' '));
-          i++;
-          cursor = parts[i];
-          break;
-        }
-        i++;
-        cursor = parts[i];
-      }
-    } else {
-      res.push(cursor);
-      i++;
-      cursor = parts[i];
-    }
-  }
-
-  return res;
 }
 
 module.exports = function genVue(source) {
