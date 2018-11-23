@@ -1,6 +1,6 @@
 {
   "name": "regular2vue",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "bin": {
     "r2v": "bin/r2v.js"
   },
