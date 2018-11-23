@@ -1,9 +1,12 @@
-const mustacheReg = /^{(.*)}$/;
+const mustacheReg = /^{([^{]*)}$/;
 const OPEN = /\{/;
 const CLOSE = /\}/;
 
 const stripMustache = value => {
-  const str = (mustacheReg.exec(value) || [])[1] || ''
+  let str = value
+  if (/^{.*}$/.test(value)) {
+    str = value.substring(1, value.length - 1);
+  }
   return str ? str.trim() : value;
 };
 const stripThisContext = value => ( value.replace(/this\./g, '') );
@@ -14,6 +17,14 @@ function isBindingValue(value) {
     return true;
   } else {
     return mustacheReg.test(value)
+  }
+}
+
+function isBindingExpression(value) {
+  if (typeof value === 'object') {
+    return false;
+  } else {
+    return /{/.test(value)
   }
 }
 
@@ -56,6 +67,39 @@ function extractExpressionInString(str, splitReg = /\s+/) {
   return res;
 }
 
+function resovleAttrExpression(value) {
+  const len = value.length;
+  let i = 0;
+  const res = [];
+  while(i < len) {
+    // collect expression
+    if (value[i] === '{') {
+      let tmp = '';
+      i++;
+      while(value[i] && value[i] !== '}') {
+        if (!/\s/.test(value[i])) {
+          tmp += value[i];
+        }
+        i++;
+      }
+      res.push(tmp)
+    // collect string
+    } else if(value[i] !== '}') {
+      let tmp = '';
+      while(value[i]) {
+        tmp += value[i];
+        if (value[i + 1] === '{') {
+          break;
+        }
+        i++;
+      }
+      res.push(`'${tmp}'`)
+    }
+    i++;
+  }
+  return res.join('+')
+}
+
 function seperateStyleNameEndValue(style = '') {
   const splitIndex = style.indexOf(':');
   return {
@@ -72,7 +116,9 @@ module.exports = {
   stripThisContext,
   strip,
   isBindingValue,
+  isBindingExpression,
   resolveValue,
   extractExpressionInString,
   seperateStyleNameEndValue,
+  resovleAttrExpression,
 }

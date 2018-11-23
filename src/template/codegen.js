@@ -6,9 +6,11 @@ const {
   stripThisContext,
   strip,
   isBindingValue,
+  isBindingExpression,
   resolveValue,
   extractExpressionInString,
   seperateStyleNameEndValue,
+  resovleAttrExpression,
 } = require('./helper');
 
 const onEventReg = /^on-/;
@@ -92,7 +94,10 @@ class VueGenerator {
         return this.genNormalDirective(attr);
       } else {
         if (isBindingValue(value)) {
-          return `:${name}="${resolveValue(value)}"`
+          return `:${name}="${resolveValue(value)}"`;
+        } else if (isBindingExpression(value)) {
+          const realValue = resovleAttrExpression(value);
+          return `:${name}="${resolveValue(realValue)}"`;
         }
         return `${name}="${value}"`;
       }
