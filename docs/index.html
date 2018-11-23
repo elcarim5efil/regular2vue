@@ -18,7 +18,8 @@
 
   <script src="https://unpkg.com/iview/dist/iview.min.js"></script>
 
-  <script src="https://unpkg.com/regular2vue@0.0.1/dist/r2v.js"></script>
+  <script src="https://unpkg.com/regular2vue@0.0.2/dist/r2v.js"></script>
+  <!-- <script src="../dist/r2v.js"></script> -->
 </head>
 <body>
 <div id="app">
@@ -62,19 +63,24 @@
         foldGutter: true,
         lineNumbers: true,
         mode: 'text/x-vue',
-        theme: 'monokai'
-      }
+        theme: 'monokai',
+      },
     },
     created() {
       this.input = `<div>{input}</div>`;
-      this.transform()
+      this.transform();
     },
     methods: {
       onInputChange() {
-        this.transform()
+        this.transform();
       },
       transform() {
-        this.output = r2v(this.input);
+        const res = r2v.transform(this.input);
+        if (res.error) {
+          this.output = res.error.toString();
+        } else {
+          this.output = res.prettified || res.raw;
+        }
       }
     }
   })
