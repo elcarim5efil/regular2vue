@@ -1,6 +1,6 @@
 const { assert } = require('./helper');
 
-describe('normal', function() {
+describe('attr', () => {
   it('binding', () => {
     assert(
       `<input value="{ title }"/>`,
@@ -8,6 +8,27 @@ describe('normal', function() {
     )
   })
 
+  it('binding with string concat', () => {
+    assert(
+      `<input value="head{ a + b }tail"/>`,
+      `<input :value="'head'+a+b+'tail'">`
+    )
+
+    assert(
+      `<input value="{ a }{ b }"/>`,
+      `<input :value="a+b">`
+    )
+
+    assert(
+      `<input value="{ a } + { b }"/>`,
+      `<input :value="a+' + '+b">`
+    )
+
+    assert(
+      `<input value="{ a() } + { b() }"/>`,
+      `<input :value="a()+' + '+b()">`
+    )
+  })
 
   it('binding should work without quotes', () => {
     assert(
@@ -22,14 +43,9 @@ describe('normal', function() {
       `<input placeholder="hello">`
     )
   })
+})
 
-  it('static', () => {
-    assert(
-      `<div>{title}</div>`,
-      `<div>{{title}}</div>`
-    )
-  })
-
+describe('text', () => {
   it('binding', () => {
     assert(
       `<div>{title} body {footer}</div>`,
@@ -37,6 +53,15 @@ describe('normal', function() {
     )
   })
 
+  it('binding without quotes', () => {
+    assert(
+      `<div>{title}</div>`,
+      `<div>{{title}}</div>`
+    )
+  })
+})
+
+describe('tag', () => {
   it('unclose tag', () => {
     assert(
       `<input>`,
