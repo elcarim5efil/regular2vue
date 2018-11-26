@@ -11,11 +11,15 @@
   <link href="https://unpkg.com/codemirror@5.42.0/theme/monokai.css" rel="stylesheet">
 
   <script src="https://unpkg.com/codemirror@5.42.0/lib/codemirror.js"></script>
-  <script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
-
-  <script src="https://unpkg.com/vue-codemirror@4.0.6/dist/vue-codemirror.js"></script>
+  <script src="https://unpkg.com/codemirror@5.42.0/addon/mode/overlay.js"></script>
+  <script src="https://unpkg.com/codemirror@5.42.0/mode/xml/xml.js"></script>
+  <script src="https://unpkg.com/codemirror@5.42.0/mode/css/css.js"></script>
+  <script src="https://unpkg.com/codemirror@5.42.0/mode/htmlmixed/htmlmixed.js"></script>
   <script src="https://unpkg.com/codemirror@5.42.0/mode/vue/vue.js"></script>
+  <script src="https://unpkg.com/codemirror@5.42.0/mode/javascript/javascript.js"></script>
 
+  <script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/vue-codemirror@4.0.6/dist/vue-codemirror.js"></script>
   <script src="https://unpkg.com/iview/dist/iview.min.js"></script>
 
   <script src="https://unpkg.com/regular2vue@0.0.3/dist/r2v.js"></script>
@@ -62,7 +66,7 @@
       codeEditorOptions: {
         foldGutter: true,
         lineNumbers: true,
-        mode: 'text/x-vue',
+        mode: 'vue',
         theme: 'monokai',
       },
     },
@@ -86,6 +90,10 @@
   })
 </script>
 <style>
+h2 {
+  text-align: center;
+}
+
 .layout{
   border: 1px solid #d7dde4;
   background: #f5f7f9;
