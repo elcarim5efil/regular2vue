@@ -6,10 +6,28 @@ const {
   outputFile
 } = require('./helper');
 
-function transformRgl(input, output, options = {}) {
+function extractTemplate(str) {
   const templateReg = /<template>([\s\S]*)<\/template>/;
+  const matched = templateReg.exec(str);
+  if (matched) {
+    return matched[1]
+  }
+  return '';
+}
+
+function extractScript(str) {
+  const scriptReg = /<script>([\s\S]*)<\/script>/;
+  const matched = scriptReg.exec(str);
+  if (matched) {
+    return matched[1]
+  }
+  return '';
+}
+
+function transformRgl(input, output, options = {}) {
   const file = readFile(input);
-  const template = templateReg.exec(file)[1];
+  const template = extractTemplate(file);
+  const script = extractScript(file);
 
   const { raw, prettified, error } = transformTemplate(template, options);
   const res = file.replace(template, `\n${prettified || raw}\n`);

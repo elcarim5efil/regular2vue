@@ -4,6 +4,10 @@ const {
   transformRgl,
 } = require('./helper/transform');
 
+const {
+  transformJs
+} = require('./javascript');
+
 function transform(input, options = {}) {
   const { rgl } = options;
   if (rgl || isRgl(input)) {
@@ -13,5 +17,6 @@ function transform(input, options = {}) {
 }
 
 module.exports = {
-  transform
+  transform,
+  transformJs
 };
