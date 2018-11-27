@@ -25,7 +25,6 @@ function Parser(input, opts){
 
 var op = Parser.prototype;
 
-
 op.parse = function(){
   this.pos = 0;
   var res= this.program();
@@ -398,7 +397,11 @@ op.assign = function(){
   var left = this.condition(), ll;
   if(ll = this.eat(['=', '+=', '-=', '*=', '/=', '%='])){
     if(!left.set) this.error('invalid lefthand expression in assignment expression');
-    return getset( left.set.replace( "," + _.setName, "," + this.condition().get ).replace("'='", "'"+ll.type+"'"), left.set);
+    // return getset( left.set.replace( "," + _.setName, "," + this.condition().get ).replace("'='", "'"+ll.type+"'"), left.set);
+    return getset(
+      left.set + ll.type + this.condition().get,
+      left.set
+    )
     // return getset('(' + left.get + ll.type  + this.condition().get + ')', left.set);
   }
   return left;
@@ -596,7 +599,10 @@ op.member = function(base, last, pathes, prevBase){
     }
   }
   if( pathes && pathes.length ) this.depend.push( pathes );
-  var res =  {get: base};
+  var res =  {
+    get: base,
+    set: base
+  };
   return res;
 }
 
