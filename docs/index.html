@@ -6,7 +6,7 @@
   <title>Regular to Vue</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="https://unpkg.com/iview/dist/styles/iview.css">
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
   <link href="https://unpkg.com/codemirror@5.42.0/lib/codemirror.css" rel="stylesheet">
   <link href="https://unpkg.com/codemirror@5.42.0/theme/monokai.css" rel="stylesheet">
 
@@ -20,40 +20,58 @@
 
   <script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
   <script src="https://unpkg.com/vue-codemirror@4.0.6/dist/vue-codemirror.js"></script>
-  <script src="https://unpkg.com/iview/dist/iview.min.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 
-  <script src="https://unpkg.com/regular2vue@0.0.4/dist/r2v.js"></script>
+  <script src="https://unpkg.com/regular2vue/dist/r2v.js"></script>
   <!-- <script src="../dist/r2v.js"></script> -->
 </head>
 <body>
 <div id="app">
-  <div class="layout">
-    <Layout>
-      <Header>
-        <h2>Regular to Vue</h2>
-      </Header>
-      <Layout>
-          <Split hide-trigger>
-              <div slot="trigger"></div>
-              <div slot="left" class="code-container">
-                  <h3>Input</h3>
-                  <codemirror 
-                    v-model="input"
-                    :options="codeEditorOptions"
-                    @input="onInputChange"
-                  />
+  <el-container>
+    <el-main>
+      <el-tabs v-model="mode">
+        <el-tab-pane label="TEMPLATE" name="template">
+          <el-row>
+            <el-col :span="12">
+              <el-card header="input">
+                <codemirror 
+                  v-model="templateInput"
+                  :options="codeEditorOptions"
+                  @input="onTemplateInputChange"
+                />
+              </el-card>
+            </el-col>
+            <el-col :span="12">
+              <el-card header="output">
+                <codemirror
+                  :options="codeEditorOptions"
+                  :value="templateOutput"
+                />
+              </el-card>
+            </el-col>
+          </el-row>
+        </el-tab-pane>
+        <!-- <el-tab-pane label="JAVASCRIPT" name="javascript">
+          <el-col :span="12">
+            <el-card header="input">
+              <codemirror 
+                v-model="scriptInput"
+                :options="jsCodeEditorOptions"
+                @input="onScriptInputChange"
+              />
+            </el-card>
+          </el-col>
+          <el-col :span="12">
+            <el-card header="modified">
+              <div v-for="item in modifiedResult">
+                {{ item.name }}
               </div>
-              <div slot="right" class="code-container">
-                  <h3>Output</h3>
-                  <codemirror
-                    :options="codeEditorOptions"
-                    :value="output"
-                  />
-              </div>
-          </Split>
-      </Layout>
-    </Layout>
-  </div>
+            </el-card>
+          </el-col>
+        </el-tab-pane> -->
+      </el-tabs>
+    </el-main>
+  </el-container>
 </div>
 <script>
   Vue.use(window.VueCodemirror)
@@ -61,52 +79,87 @@
   new Vue({
     el: '#app',
     data: {
-      input: '',
-      output: '',
+      mode: 'template',
+      templateInput: '',
+      templateOutput: '',
+      scriptInput: '',
       codeEditorOptions: {
         foldGutter: true,
         lineNumbers: true,
         mode: 'vue',
         theme: 'monokai',
       },
+      jsCodeEditorOptions: {
+        foldGutter: true,
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'monokai',
+      },
+      modifiedResult: []
     },
     created() {
-      this.input = `<div>{input}</div>`;
-      this.transform();
+      this.templateInput = `<div>{input}</div>`;
+      this.scriptInput =
+`export default {
+  config() {
+    this.data.a = 100;
+  }
+}
+`;
+      this.transformTemplate();
+      // this.transformScript();
     },
     methods: {
-      onInputChange() {
-        this.transform();
+      onTemplateInputChange() {
+        this.transformTemplate();
       },
-      transform() {
-        const res = r2v.transform(this.input);
+      transformTemplate() {
+        const res = r2v.transform(this.templateInput);
         if (res.error) {
-          this.output = res.error.toString();
+          this.templateOutput = res.error.toString();
         } else {
-          this.output = res.prettified || res.raw;
+          this.templateOutput = res.prettified || res.raw;
         }
+        console.log('transformTemplate', res);
+      },
+      onScriptInputChange() {
+        this.transformScript();
+      },
+      transformScript() {
+        const res = r2v.transformJs(this.scriptInput);
+        const { modified, unmodified } = res;
+        console.log('transformScript', res);
+        const modifiedResult = this.resolveModifiedProp(modified)
+        this.modifiedResult = modifiedResult;
+        // if (res.error) {
+        //   this.templateOutput = res.error.toString();
+        // } else {
+        //   this.templateOutput = res.prettified || res.raw;
+        // }
+      },
+      resolveModifiedProp(modified) {
+        return Object.keys(modified).map((key) => {
+          const prop = modified[key]
+          return {
+            name: key,
+            reason: [
+
+            ]
+          }
+        })
+      },
+      onMenuSelect(e) {
+        console.log(e)
       }
-    }
+    },
   })
 </script>
 <style>
 h2 {
   text-align: center;
 }
-
-.layout{
-  border: 1px solid #d7dde4;
-  background: #f5f7f9;
-  position: relative;
-  border-radius: 4px;
-  /* overflow: hidden; */
-  /* height: 100vh; */
-}
-.code-container {
-  padding: 8px;
-}
 .CodeMirror {
-  height: 90vh;
+  height: 70vh; 
 }
 </style>
 </body>
