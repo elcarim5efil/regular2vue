@@ -206,17 +206,18 @@ class VueGenerator {
     const classList = extractExpressionInString(value);
     const vueClassList = classList.map(c => {
       if (OPEN.test(c)) {
-        return `\`${stripThisContext(c).replace(/{/g, '${')}\``
+        const vueValue = stripThisContext(c).replace(/{/g, '${').replace(/"/g, `'`);
+        return `\`${vueValue}\``;
       } else {
-        return `'${c}'`
+        return `'${c}'`;
       }
     })
-    return `:class="[${vueClassList.join(',')}]"`
+    return `:class="[${vueClassList.join(',')}]"`;
   }
 
   genRClass(attr = {}) {
     const { value = '' } = attr;
-    const realValue = resolveValue(value);
+    const realValue = resolveValue(value).replace(/"/g, `'`);
     const vueValue = realValue;
     return `:class="${vueValue}"`;
   }
