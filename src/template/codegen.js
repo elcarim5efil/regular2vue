@@ -1,21 +1,12 @@
 const { parse } = require('./parse');
+const visitors = require('./visitors');
 const {
-  OPEN,
-  CLOSE,
-  stripMustache,
+  resolveAttr
+} = require('./resolve-helpers');
+const {
   stripThisContext,
-  strip,
-  isBindingValue,
-  isBindingExpression,
-  resolveValue,
-  extractExpressionInString,
-  seperateStyleNameEndValue,
-  resovleAttrExpression,
-  isForbiddenCloseTag
+  isForbiddenCloseTag,
 } = require('./helper');
-
-const onEventReg = /^on-/;
-const normalDirectiveReg = /^r-[model|html|show]/;
 
 class VueGenerator {
   constructor(source) {
@@ -56,6 +47,8 @@ class VueGenerator {
   }
 
   genTag(el= {}) {
+    this.visitTag(el)
+
     const { tag } = el;
     const childrenStr = this.genChildren(el);
     const startTag = [
@@ -73,52 +66,9 @@ class VueGenerator {
 
   genAttrs(el = {}) {
     const { attrs = [] } = el;
-    const attrsStr =  attrs.map(attr => {
-      const { name, value } = attr;
-
-      if (onEventReg.test(name)) {
-        return this.genEvent(attr);
-      } else if (name === 'r-class') {
-        return this.genRClass(attr)
-      } else if (name === 'class') {
-        return this.genClass(attr)
-      } else if (name === 'style') {
-        return this.genStyle(attr)
-      } else if (name === 'r-style') {
-        return this.genRStyle(attr)
-      // r-hide -> v-show
-      } else if (name === 'r-hide') {
-        return this.genRHide(attr)
-      // r-show, r-model, r-html
-      } else if(normalDirectiveReg.test(name)) {
-        return this.genNormalDirective(attr);
-      } else {
-        if (isBindingValue(value)) {
-          return `:${name}="${resolveValue(value)}"`;
-        } else if (isBindingExpression(value)) {
-          const realValue = resovleAttrExpression(value);
-          return `:${name}="${resolveValue(realValue)}"`;
-        }
-        return `${name}="${value}"`;
-      }
-    }).join(' ');
+    const attrsStr =  attrs.map(resolveAttr).join(' ');
 
     return attrsStr ? ` ${attrsStr}` : '';
-  }
-
-  genEvent(attr = {}) {
-    const { name, value = '' } = attr;
-    const realValue = resolveValue(value).replace(/\(\)/g, '');
-    const vueName = name.replace(onEventReg, '')
-
-    return `@${vueName}="${realValue}"`;
-  }
-
-  genNormalDirective(attr = {}) {
-    const { name, value = '' } = attr;
-    const expr = resolveValue(value);
-    const vueName = name.replace(/^r/, 'v')
-    return `${vueName}="${expr}"`;
   }
 
   genChildren(el = {}) {
@@ -197,69 +147,6 @@ class VueGenerator {
     ].join('');
   }
 
-  genClass(attr = {}) {
-    const { value = '' } = attr;
-
-    if (!OPEN.test(value)) {
-      return `class="${value}"`
-    }
-    const classList = extractExpressionInString(value);
-    const vueClassList = classList.map(c => {
-      if (OPEN.test(c)) {
-        const vueValue = stripThisContext(c).replace(/{/g, '${').replace(/"/g, `'`);
-        return `\`${vueValue}\``;
-      } else {
-        return `'${c}'`;
-      }
-    })
-    return `:class="[${vueClassList.join(',')}]"`;
-  }
-
-  genRClass(attr = {}) {
-    const { value = '' } = attr;
-    const realValue = resolveValue(value).replace(/"/g, `'`);
-    const vueValue = realValue;
-    return `:class="${vueValue}"`;
-  }
-
-  genRStyle(attr = {}) {
-    const { value = '' } = attr;
-    const realValue = resolveValue(value);
-    const vueValue = realValue;
-    return `:style="${vueValue}"`;
-  }
-
-  genStyle(attr = {}) {
-    const { value = '' } = attr;
-
-    if (!OPEN.test(value)) {
-      return `style="${value}"`
-    }
-
-    const styleList
-      = extractExpressionInString(value, /;/)
-        .map(seperateStyleNameEndValue);
-
-    const vueStyleList
-      = styleList
-        .map(style => {
-          const { name, value } = style;
-          if (OPEN.test(style.value)) {
-            return `'${name}':\`${stripThisContext(value).replace(/{/g, '${')}\``;
-          } else {
-            return `'${name}':'${value}'`
-          }
-        })
-
-    return `:style="[{${vueStyleList.join(',')}}]"`
-  }
-
-  genRHide(attr = {}) {
-    const { value = '' } = attr;
-    const vueValue = resolveValue(value)
-    return `v-show="!(${vueValue})"`
-  }
-
   genTemplate(el = {}) {
     const { content } = el;
     if (/this.\$body/.test(content.body)) {
@@ -273,6 +160,26 @@ class VueGenerator {
     const { value = '' } = el;
     return `<!-- ${value.trim()} -->`
   }
+
+  visit(type, key, el) {
+    if (!visitors[type]) {
+      return
+    }
+
+    if (visitors[type].all) {
+      visitors[type].all.call(this, el)
+    }
+
+    if (visitors[type][key]) {
+      visitors[type][key].call(this, el)
+    }
+  }
+
+  visitTag(el) {
+    const { tag } = el;
+    this.visit('tag', tag, el);
+  }
+
 }
 
 module.exports = function genVue(source) {
