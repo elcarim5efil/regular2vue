@@ -136,6 +136,7 @@ Lexer.setup = function(){
     // JST
     rules.JST_OPEN,
     rules.JST_BODY_OPEN,
+    rules.JST_COMMENT,
     rules.JST_CLOSE,
     rules.JST_EXPR_OPEN,
     rules.JST_IDENT,
@@ -143,8 +144,7 @@ Lexer.setup = function(){
     rules.JST_LEAVE,
     rules.JST_NUMBER,
     rules.JST_PUNCHOR,
-    rules.JST_STRING,
-    rules.JST_COMMENT
+    rules.JST_STRING
     ])
 
   // ignored the tag-relative token
@@ -327,8 +327,10 @@ var rules = {
       value: one
     }
   }, 'JST'],
-  JST_COMMENT: [/{BEGIN}\!([^\x00]*?)\!{END}/, function(){
+  JST_COMMENT: [/{BEGIN}\!([^\x00]*?)\!{END}/, function(one, two, value){
     this.syntaxSets.leave();
+    // var value = one || two || "";
+    // return {type: 'COMMENT', value: value}
   }, 'JST'],
   JST_EXPR_OPEN: ['{BEGIN}',function(all, one){
     if(all === this.markStart){
