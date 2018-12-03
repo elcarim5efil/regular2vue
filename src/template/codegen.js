@@ -11,11 +11,11 @@ const {
   extractExpressionInString,
   seperateStyleNameEndValue,
   resovleAttrExpression,
+  isForbiddenCloseTag
 } = require('./helper');
 
 const onEventReg = /^on-/;
 const normalDirectiveReg = /^r-[model|html|show]/;
-const uncloseTags = ['input', 'img']
 
 class VueGenerator {
   constructor(source) {
@@ -136,7 +136,7 @@ class VueGenerator {
 
   genEndTag(el = {}) {
     const { tag } = el
-    if (~uncloseTags.indexOf(tag)) {
+    if (isForbiddenCloseTag(tag)) {
       return '';
     }
     return `</${tag}>`;

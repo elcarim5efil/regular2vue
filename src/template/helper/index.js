@@ -108,6 +108,17 @@ function seperateStyleNameEndValue(style = '') {
   };
 }
 
+const forbiddenCloseTags = [
+  'area', 'base', 'br', 'col', 'command',
+  'embed', 'hr', 'img', 'input', 'keygen',
+  'link', 'meta', 'param', 'source', 'track',
+  'wbr',
+];
+
+function isForbiddenCloseTag(tag) {
+  return ~forbiddenCloseTags.indexOf(tag);
+}
+
 module.exports = {
   mustacheReg,
   OPEN,
@@ -121,4 +132,5 @@ module.exports = {
   extractExpressionInString,
   seperateStyleNameEndValue,
   resovleAttrExpression,
+  isForbiddenCloseTag
 }
