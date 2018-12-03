@@ -66,7 +66,7 @@ class VueGenerator {
 
   genAttrs(el = {}) {
     const { attrs = [] } = el;
-    const attrsStr =  attrs.map(resolveAttr).join(' ');
+    const attrsStr =  attrs.map((attr) => resolveAttr(attr, el)).filter(e => e).join(' ');
 
     return attrsStr ? ` ${attrsStr}` : '';
   }

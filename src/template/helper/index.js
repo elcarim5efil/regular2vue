@@ -119,6 +119,11 @@ function isForbiddenCloseTag(tag) {
   return ~forbiddenCloseTags.indexOf(tag);
 }
 
+function hasUnwalkedAttr(el = {}, name) {
+  const { attrs } = el;
+  return attrs.some(attr => attr.name === name && !attr.walked);
+}
+
 module.exports = {
   mustacheReg,
   OPEN,
@@ -132,5 +137,6 @@ module.exports = {
   extractExpressionInString,
   seperateStyleNameEndValue,
   resovleAttrExpression,
-  isForbiddenCloseTag
+  isForbiddenCloseTag,
+  hasUnwalkedAttr
 }
