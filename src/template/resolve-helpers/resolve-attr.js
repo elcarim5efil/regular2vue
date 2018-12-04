@@ -1,6 +1,7 @@
 const {
   OPEN,
   stripThisContext,
+  stripMustache,
   isBindingValue,
   isBindingExpression,
   resolveValue,
@@ -9,6 +10,8 @@ const {
   resovleAttrExpression,
   hasUnwalkedAttr,
 } = require('../helper');
+
+const { notEmpty } = require('../../helper/utils');
 
 const onEventReg = /^on-/;
 const normalDirectiveReg = /^r-[model|html|show]/;
@@ -42,84 +45,109 @@ const resolvers = {
 
     return `@${vueName}="${realValue}"`;
   },
+
+  // class and r-class should combine
   class(attr = {}, el) {
     const { value = '' } = attr;
-    let staticClass = '';
-    let dynamicClass = '';
-    let staticClassList = [];
+    const staticClassList = [];
+    const dynamicClassList = []
 
-    if (!OPEN.test(value)) {
-      staticClassList = value.split(/\s+/);
-    }
     const classList = extractExpressionInString(value);
-    let dynamicClassList = classList
-      .map(c => {
-        if (OPEN.test(c)) {
-          const vueValue = stripThisContext(c).replace(/{/g, '${').replace(/"/g, `'`);
-          return `\`${vueValue}\``;
-        } else if (!~staticClassList.indexOf(c)){
-          staticClassList.push(c);
-        }
-      })
-      .filter(e => e);
+    classList.forEach(c => {
+      if (OPEN.test(c)) {
+        const vueValue = stripThisContext(c).replace(/{/g, '${').replace(/"/g, `'`);
+        dynamicClassList.push(`\`${vueValue}\``); 
+      } else {
+        staticClassList.push(c);
+      }
+    })
 
-    recordDynamicClassList(el, dynamicClassList)
+    record(el, 'dynamicClassList', dynamicClassList)
 
-    staticClass = staticClassList.length > 0 ?
+    const staticClass = staticClassList.length > 0 ?
       `class="${staticClassList.join(' ')}"` :
       '';
     
-    dynamicClass = (el.dynamicClassList && !hasUnwalkedAttr(el, 'r-class')) ?
+    const dynamicClass = (el.dynamicClassList && !hasUnwalkedAttr(el, 'r-class')) ?
       `:class="[${el.dynamicClassList.join(',')}]"` :
       '';
 
-    return [staticClass, dynamicClass].filter(e => e).join(' ');
+    return (
+      [staticClass, dynamicClass]
+        .filter(notEmpty)
+        .join(' ')
+    );
   },
   'r-class'(attr = {}, el) {
     const { value = '' } = attr;
     const realValue = resolveValue(value).replace(/"/g, `'`);
     const vueValue = realValue;
 
-    recordDynamicClassList(el, [vueValue])
+    record(el, 'dynamicClassList', [vueValue])
 
-    return !hasUnwalkedAttr(el, 'class') ?
-      (
+    return (
+      !hasUnwalkedAttr(el, 'class') ? (
         el.dynamicClassList.length > 1 ?
           `:class="[${el.dynamicClassList.join(',')}]"` :
           `:class="${vueValue}"`
       ) :
-      '';
+      ''
+    );
   },
-  'r-style'(attr = {}) {
+  
+  // style and r-style should combine
+  style(attr = {}, el) {
     const { value = '' } = attr;
-    const realValue = resolveValue(value);
-    const vueValue = realValue;
-    return `:style="${vueValue}"`;
-  },
-  style(attr = {}) {
-    const { value = '' } = attr;
-
-    if (!OPEN.test(value)) {
-      return `style="${value}"`
-    }
+    const staticStyleList = [];
+    const dynamicStyleList = [];
 
     const styleList
       = extractExpressionInString(value, /;/)
         .map(seperateStyleNameEndValue);
 
-    const vueStyleList
-      = styleList
-        .map(style => {
-          const { name, value } = style;
-          if (OPEN.test(style.value)) {
-            return `'${name}':\`${stripThisContext(value).replace(/{/g, '${')}\``;
-          } else {
-            return `'${name}':'${value}'`
-          }
-        })
+    styleList.forEach(style => {
+      const { name, value } = style;
+      if (OPEN.test(style.value)) {
+        dynamicStyleList.push(
+          `'${name}':\`${stripThisContext(value).replace(/{/g, '${')}\``
+        );
+      } else {
+        staticStyleList.push(`${name}:${value}`)
+      }
+    });
 
-    return `:style="[{${vueStyleList.join(',')}}]"`
+    record(el, 'dynamicStyleList', dynamicStyleList);
+    
+    const staticStyle = staticStyleList.length > 0 ?
+      `style="${staticStyleList.join(';')}"` :
+      '';
+
+    const dynamicStyle = (el.dynamicStyleList && !hasUnwalkedAttr(el, 'r-style')) ?
+      `:style="{${el.dynamicStyleList.join(',')}}"` :
+      '';
+
+    return (
+      [staticStyle, dynamicStyle]
+        .filter(notEmpty)
+        .join(' ')
+    );
   },
+  'r-style'(attr = {}, el) {
+    const { value = '' } = attr;
+    const realValue = stripMustache(resolveValue(value));
+
+    record(el, 'dynamicStyleList', [realValue]);
+
+    return (
+      !hasUnwalkedAttr(el, 'style') ? (
+        el.dynamicStyleList.length > 1 ?
+          `:style="{${el.dynamicStyleList.join(',')}}"` :
+          `:style="{${realValue}}"`
+      ) :
+      ''
+    );
+  },
+
   // r-hide -> v-show
   'r-hide'(attr = {}) {
     const { value = '' } = attr;
@@ -128,16 +156,16 @@ const resolvers = {
   }
 }
 
-function recordDynamicClassList(el, list = []) {
+function record(el, key = 'dynamicClassList', list = []) {
   if (list && list.length > 0) {
-    if (!el.dynamicClassList) {
-      el.dynamicClassList = list;
+    if (!el[key]) {
+      el[key] = list;
     } else {
-      el.dynamicClassList = el.dynamicClassList.concat(list);
+      el[key] = el[key].concat(list);
     }
-    el.dynamicClassList = el.dynamicClassList.filter(e => e);
+    el[key] = el[key].filter(notEmpty);
   }
-  return el.dynamicClassList
+  return el[key];
 }
 
 module.exports = function(attr, el) {
