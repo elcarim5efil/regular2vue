@@ -108,6 +108,22 @@ function seperateStyleNameEndValue(style = '') {
   };
 }
 
+const forbiddenCloseTags = [
+  'area', 'base', 'br', 'col', 'command',
+  'embed', 'hr', 'img', 'input', 'keygen',
+  'link', 'meta', 'param', 'source', 'track',
+  'wbr',
+];
+
+function isForbiddenCloseTag(tag) {
+  return ~forbiddenCloseTags.indexOf(tag);
+}
+
+function hasUnwalkedAttr(el = {}, name) {
+  const { attrs } = el;
+  return attrs.some(attr => attr.name === name && !attr.walked);
+}
+
 module.exports = {
   mustacheReg,
   OPEN,
@@ -121,4 +137,6 @@ module.exports = {
   extractExpressionInString,
   seperateStyleNameEndValue,
   resovleAttrExpression,
+  isForbiddenCloseTag,
+  hasUnwalkedAttr
 }
