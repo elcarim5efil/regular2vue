@@ -8,7 +8,7 @@ function prettify(content, options = {}) {
     singleQuote = true,
     trailingComma = 'none',
     jsxBracketSameLine = true,
-    htmlWhitespaceSensitivity = 'ignore'
+    htmlWhitespaceSensitivity = 'strict'
   } = options;
 
   prettified = prettier.format(content, {
