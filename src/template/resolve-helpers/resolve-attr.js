@@ -32,7 +32,7 @@ const resolvers = {
         return `:${name}="${resolveValue(value)}"`;
       } else if (isBindingExpression(value)) {
         const realValue = resovleAttrExpression(value);
-        return `:${name}="${resolveValue(realValue)}"`;
+        return `:${name}="${realValue}"`;
       }
       return `${name}="${value}"`;
     }
