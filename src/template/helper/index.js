@@ -31,9 +31,26 @@ function isBindingExpression(value) {
 function resolveValue(value) {
   if (typeof value === 'object') {
     return stripThisContext(value.body);
+  } else if (/\|/.test(value)) {
+    return resolveFilterExpression(stripMustache(stripThisContext(value)));
   } else {
-    return strip ? stripMustache(stripThisContext(value)) : value;
+    return stripMustache(stripThisContext(value));
   }
+}
+
+function resolveFilterExpression(value) {
+  const parts = value.split('|');
+  const variable = parts[0];
+  const filters = parts.slice(1).map((filter) => {
+    const [ filterName, args = '' ] = filter.split(':');
+    if (args) {
+      return `${filterName}(${args})`;
+    } else {
+      return filterName;
+    }
+  })
+
+  return `${variable}|${filters.join('|')}`;
 }
 
 function extractExpressionInString(str, splitReg = /\s+/) {
@@ -82,7 +99,7 @@ function resovleAttrExpression(value) {
         }
         i++;
       }
-      res.push(tmp)
+      res.push(resolveValue(tmp))
     // collect string
     } else if(value[i] !== '}') {
       let tmp = '';

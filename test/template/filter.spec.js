@@ -21,5 +21,10 @@ describe('filter', function() {
       `<div>{text|test:arg1,arg2|test2}</div>`,
       `<div>{{text|test(arg1,arg2)|test2}}</div>`
     )
+
+    assert(
+      `<div data="{text|test:arg1,arg2|test2}"></div>`,
+      `<div :data="text|test(arg1,arg2)|test2"></div>`
+    )
   })
 })
