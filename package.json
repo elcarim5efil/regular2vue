@@ -16,9 +16,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@babel/core": "^7.1.6",
-    "@babel/helper-plugin-utils": "^7.0.0",
-    "@babel/parser": "^7.1.6",
+    "@babel/standalone": "^7.1.0",
     "@babel/types": "^7.1.6",
     "commander": "^2.19.0",
     "fs-extra": "^7.0.1",
