@@ -115,7 +115,9 @@
         this.transformTemplate();
       },
       transformTemplate() {
-        const res = r2v.transform(this.templateInput);
+        const res = r2v.transform(this.templateInput, {
+          htmlWhitespaceSensitivity: 'strict'
+        });
         if (res.error) {
           this.templateOutput = res.error.toString();
         } else {
